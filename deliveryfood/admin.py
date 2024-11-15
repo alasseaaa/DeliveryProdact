@@ -8,13 +8,18 @@ class CategoryAdmin(admin.ModelAdmin):
         'category_name',
     ]
 
+    search_fields = (
+            "category_name",
+        )
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     # отображение
     list_display = [
         'name',
         'id_category',
-        'kratkoye_opisanie',
+        'description',
         'price',
     ]
     # поиск
@@ -29,16 +34,16 @@ class ProductAdmin(admin.ModelAdmin):
     list_editable = ["price"] 
     list_display_links = ["name"]
 
-    def kratkoye_opisanie(self, obj):
-        """
-        Возвращает краткое описание объекта.
-        Описание объекта, сокращенное до первых пятидесяти символов.
-        """
-        return (
-            obj.description[:50] + "..."
-            if len(obj.description) > 50
-            else obj.description
-        )
+    # def kratkoye_opisanie(self, obj):
+    #     """
+    #     Возвращает краткое описание объекта.
+    #     Описание объекта, сокращенное до первых пятидесяти символов.
+    #     """
+    #     return (
+    #         obj.description[:50] + "..."
+    #         if len(obj.description) > 50
+    #         else obj.description
+    #     )
     
 
 
@@ -50,12 +55,22 @@ class ProfileAdmin(admin.ModelAdmin):
         'phone',
     ]
 
+    search_fields = (
+        'full_name',
+        'email',
+    )
+
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
         'id_user',
         'address',
     ]
+    
+    search_fields = (
+        'address',
+    )
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
@@ -64,7 +79,7 @@ class OrderAdmin(admin.ModelAdmin):
         'id_user_addresses',
         'order_date',
     ]
-
+    
 @admin.register(OrderedItem)
 class OrderedItemAdmin(admin.ModelAdmin):
     list_display = [
@@ -72,3 +87,4 @@ class OrderedItemAdmin(admin.ModelAdmin):
         'id_product',
         'product_quantity',
     ]
+
