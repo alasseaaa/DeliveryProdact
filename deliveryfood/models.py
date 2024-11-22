@@ -1,4 +1,5 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
 
 # Create your models here.
 class Category(models.Model):
@@ -17,6 +18,7 @@ class Product(models.Model):
     id_category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
     description = models.CharField(max_length=512, verbose_name="Описание")
     price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name="Цена")
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Товар'
@@ -31,6 +33,7 @@ class Profile(models.Model):
     full_name = models.CharField(max_length=256, verbose_name='Полное имя')
     email = models.CharField(max_length=320, verbose_name='Email')
     phone = models.CharField(max_length=11, verbose_name='Телефон')
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Профиль'
@@ -43,6 +46,7 @@ class Profile(models.Model):
 class Address(models.Model):
     id_user = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name='Пользователь')
     address = models.CharField(max_length=512, verbose_name='Адрес')
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Адрес'
@@ -57,6 +61,7 @@ class Order(models.Model):
     id_user = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name='Пользователь')
     id_user_addresses = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name='Адрес доставки')
     order_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата заказа')
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Заказ'
@@ -70,6 +75,7 @@ class OrderedItem(models.Model):
     id_order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name='Заказ')
     id_product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Товар')
     product_quantity = models.SmallIntegerField(default=0, verbose_name='Количество')
+    history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Товар в заказе'
