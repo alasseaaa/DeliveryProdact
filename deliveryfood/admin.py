@@ -33,6 +33,8 @@ class ProductAdmin(admin.ModelAdmin):
     # изменение полей
     list_editable = ["price"] 
     list_display_links = ["name"]
+    
+
 
     # def kratkoye_opisanie(self, obj):
     #     """
@@ -59,6 +61,8 @@ class ProfileAdmin(admin.ModelAdmin):
         'full_name',
         'email',
     )
+
+    list_filter = ["full_name"]
 
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):

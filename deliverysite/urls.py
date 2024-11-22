@@ -17,8 +17,20 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
+from rest_framework import routers
+from deliveryfood import views
+
+
+router = routers.DefaultRouter()
+router.register("products", views.ProductViewSet)
+router.register("category", views.CategoryViewSet)
+router.register("profile", views.ProfileViewSet)
+router.register("address", views.AddressViewSet)
+router.register("order", views.OrderViewSet)
+router.register("ordereditems", views.OrderedItemViewSet)
 
 urlpatterns = [
     path("deliveryfood/", include("deliveryfood.urls")),
     path("admin/", admin.site.urls),
+    path("api/", include(router.urls)),
 ]

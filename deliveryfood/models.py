@@ -63,7 +63,7 @@ class Order(models.Model):
         verbose_name_plural = 'Заказы'
 
     # def __str__(self):
-    #     return self.address
+    #     return self.id
 
 
 class OrderedItem(models.Model):
