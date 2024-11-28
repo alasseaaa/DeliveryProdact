@@ -15,7 +15,7 @@ class Category(models.Model):
 # ТЕСТ КОММИТ
 class Product(models.Model):
     name = models.CharField(max_length=64, verbose_name="Название")
-    id_category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
     description = models.CharField(max_length=512, verbose_name="Описание")
     price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name="Цена")
     history = HistoricalRecords()
@@ -44,7 +44,7 @@ class Profile(models.Model):
 
 
 class Address(models.Model):
-    id_user = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name='Пользователь')
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name='Пользователь')
     address = models.CharField(max_length=512, verbose_name='Адрес')
     history = HistoricalRecords()
 
@@ -58,22 +58,24 @@ class Address(models.Model):
 
 
 class Order(models.Model):
-    id_user = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name='Пользователь')
-    id_user_addresses = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name='Адрес доставки')
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name='Пользователь')
+    user_addresses = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name='Адрес доставки')
     order_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата заказа')
+    products = models.ManyToManyField(Product, through='OrderedItem')
     history = HistoricalRecords()
 
     class Meta:
         verbose_name = 'Заказ'
         verbose_name_plural = 'Заказы'
 
-    # def __str__(self):
-    #     return self.id
+    def __str__(self):
+        return f'Заказ № {self.id} от {self.user}'
+
 
 
 class OrderedItem(models.Model):
-    id_order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name='Заказ')
-    id_product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Товар')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name='Заказ')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='Товар')
     product_quantity = models.SmallIntegerField(default=0, verbose_name='Количество')
     history = HistoricalRecords()
 

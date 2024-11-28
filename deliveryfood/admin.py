@@ -18,7 +18,7 @@ class ProductAdmin(admin.ModelAdmin):
     # отображение
     list_display = [
         'name',
-        'id_category',
+        'category',
         'description',
         'price',
     ]
@@ -33,19 +33,6 @@ class ProductAdmin(admin.ModelAdmin):
     # изменение полей
     list_editable = ["price"] 
     list_display_links = ["name"]
-    
-
-
-    # def kratkoye_opisanie(self, obj):
-    #     """
-    #     Возвращает краткое описание объекта.
-    #     Описание объекта, сокращенное до первых пятидесяти символов.
-    #     """
-    #     return (
-    #         obj.description[:50] + "..."
-    #         if len(obj.description) > 50
-    #         else obj.description
-    #     )
     
 
 
@@ -67,28 +54,35 @@ class ProfileAdmin(admin.ModelAdmin):
 @admin.register(Address)
 class AddressAdmin(admin.ModelAdmin):
     list_display = [
-        'id_user',
+        'user',
         'address',
     ]
     
     search_fields = (
         'address',
+        'user__full_name'
     )
 
+class OrderInline(admin.TabularInline):
+    model = OrderedItem
+    raw_id_fields=['product',]
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = [
-        'id_user',
-        'id_user_addresses',
-        'order_date',
-    ]
+    list_display = ['id', 'user', 'user_addresses', 'order_date',]
+    readonly_fields = ['order_date']
+    raw_id_fields=['user', 'user_addresses']
+    inlines = [OrderInline]
+    search_fields = (
+        'id',
+    )
+    
     
 @admin.register(OrderedItem)
 class OrderedItemAdmin(admin.ModelAdmin):
     list_display = [
-        'id_order',
-        'id_product',
+        'order',
+        'product',
         'product_quantity',
     ]
 
