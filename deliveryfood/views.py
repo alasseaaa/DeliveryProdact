@@ -18,15 +18,15 @@ class ProductFilter(django_filters.FilterSet):
         model = Product
         fields = ["category", "description", "min_price", "max_price"]
 
-class ProductPriceSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Product
-            fields = ['price']
+# class ProductPriceSerializer(serializers.ModelSerializer):
+#         class Meta:
+#             model = Product
+#             fields = ['price']
             
-        def validate_price(self, value):
-            if value <0:
-                raise serializers.ValidationError("Цена не может быть меньше нуля.")
-            return value 
+#         def validate_price(self, value):
+#             if value <0:
+#                 raise serializers.ValidationError("Цена не может быть меньше нуля.")
+#             return value 
 
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
@@ -51,21 +51,21 @@ class ProductViewSet(viewsets.ModelViewSet):
         )
 
 
-    @action(methods=['POST'], detail=True)
-    def change_price(self, request, pk=None):
+    # @action(methods=['POST'], detail=True)
+    # def change_price(self, request, pk=None):
 
-        product = self.get_object()
-        serializer = ProductPriceSerializer(product, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Цена товара изменена."}, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     product = self.get_object()
+    #     serializer = ProductPriceSerializer(product, data=request.data, partial=True)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response({"message": "Цена товара изменена."}, status=status.HTTP_200_OK)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def get_serializer_class(self):
+    # def get_serializer_class(self):
 
-        if self.action == 'change_price':
-            return ProductPriceSerializer
-        return super().get_serializer_class()
+    #     if self.action == 'change_price':
+    #         return ProductPriceSerializer
+    #     return super().get_serializer_class()
    
     # @action(methods=['GET'], detail=False)
     # def sorted_by_price(self, request):
