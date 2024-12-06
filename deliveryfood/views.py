@@ -72,6 +72,17 @@ class ProductViewSet(viewsets.ModelViewSet):
         sorted_products = self.queryset.order_by('price')
         serializer = self.get_serializer(sorted_products, many=True)
         return Response(serializer.data)
+    
+    @action(methods=['GET'], detail=False)
+    def milk_not_gte_100(self, request):
+        selected_products = ProductSerializer(Product.objects.filter(
+            ~Q(price__gte=100) &
+            (Q(category__category_name="Молочные продукты") |
+            Q(category__category_name="Хлебобулочные изделия"))
+
+        ), many = True
+        )
+        return Response ({"молочка булки 100" : selected_products})
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
