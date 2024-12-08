@@ -83,6 +83,17 @@ class ProductViewSet(viewsets.ModelViewSet):
         )
         serializer1 = ProductSerializer(selected_products, many=True)
         return Response ({"Молочка и выпечка стоимостью < 100" : serializer1.data,})
+    
+    @action(methods=['GET'], detail=False)
+    def vtoroy_zapros(self, request):
+        selected_products = Product.objects.filter(
+            (Q(category__category_name="Молочные продукты")&~Q(price__lte=200)) 
+            | (Q(category__category_name="Хлебобулочные изделия") &~Q(price__gte=100))
+
+        )
+        serializer2 = ProductSerializer(selected_products, many=True)
+        return Response ({"text...." : serializer2.data,})
+    
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -96,11 +107,21 @@ class ProfileViewSet(viewsets.ModelViewSet):
     filter_backends = [SearchFilter]
     search_fields = ['full_name']
 
+    # @action(methods=['GET'], detail=False)
+    # def filter_user(self, request):
+    #     selected_profile = Profile.objects.filter(
+    #         Q(address__gt = 1) & 
+    #         (Q(full_name='Мария') | ~Q(phone__contains='3471'))
+    #     )
+    #     serializer = ProfileSerializer(selected_profile, many=True)
+    #     return Response({"Профили" : serializer.data,})
+    
+
 class AddressViewSet(viewsets.ModelViewSet):
     queryset = Address.objects.all()
     serializer_class = AddressSerializer
     filter_backends = [SearchFilter]
-    search_fields = ['аddress', "user"]
+    search_fields = ['address']
 
 
 class OrderFilter(django_filters.FilterSet):
@@ -123,6 +144,7 @@ class OrderedItemFilter(django_filters.FilterSet):
 class OrderedItemViewSet(viewsets.ModelViewSet):
     queryset = OrderedItem.objects.all()
     serializer_class = OrderedItemSerializer
+    filter_backends = [SearchFilter, DjangoFilterBackend]
     filterset_class = OrderedItemFilter
 
 def index(request):
