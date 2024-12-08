@@ -9,10 +9,6 @@ class ProductResource(ModelResource):
     def dehydrate_price(self, Product):
         return f"${Product.price:.2f}"
     
-    def get_export_queryset(self, Product):
-        # Пример: экспортируем только продукты с ценой выше 10
-        return Product.objects.filter(price__gt=100)
-
 class CategoryResource(ModelResource):
     class Meta:
         model = Category
