@@ -1,0 +1,13 @@
+
+services:
+  web:
+    container_name: deliverysite_web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ./:/app
+    environment:
+      - DJANGO_SETTINGS_MODULE=deliverysite.settings
