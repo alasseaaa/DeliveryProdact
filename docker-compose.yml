@@ -1,13 +1,56 @@
-
+version: "3.10.6"
 services:
   web:
-    container_name: deliverysite_web
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
-      - 8000:8000
+      - "8000:8000"
     volumes:
       - ./:/app
+    depends_on:
+      - celery
+      - redis
     environment:
       - DJANGO_SETTINGS_MODULE=deliverysite.settings
+  celery:
+    build: .
+    command: celery -A deliverysite worker -l info
+    depends_on:
+      - redis
+    environment:
+      - DJANGO_SETTINGS_MODULE=deliverysite.settings
+  redis:
+    image: redis:alpine
+    hostname: redis
+  celerybeat:
+    build: .
+    command: celery -A deliverysite beat -l info
+    depends_on:
+      - redis
+      - web
+    environment:
+      - DJANGO_SETTINGS_MODULE=deliverysite.settings
+
+
+
+
+
+
+
+
+
+
+
+# services:
+#   web:
+#     container_name: deliverysite_web
+#     build:
+#       context: .
+#       dockerfile: Dockerfile
+#     ports:
+#       - 8000:8000
+#     volumes:
+#       - ./:/app
+#     environment:
+#       - DJANGO_SETTINGS_MODULE=deliverysite.settings
+
+
