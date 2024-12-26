@@ -1,4 +1,4 @@
-# Основа образа - Python 3.8
+# Основа образа - Python 3.10.6
 FROM python:3.10.6
 
 RUN python -m pip install --upgrade pip

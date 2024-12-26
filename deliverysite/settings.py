@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'import_export',
     'django_celery_beat',
     'django_celery_results',
+    'mailhog',
 ]
 
 MIDDLEWARE = [
@@ -143,6 +144,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = '172.19.144.1'
+EMAIL_PORT = 1025  # SMTP port of Mailhog
+EMAIL_USE_TLS = False
+
 CELERY_BROKER_URL = 'redis://redis:6379'
 CELERY_RESULT_BACKEND = 'redis://redis:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
@@ -152,9 +158,28 @@ CELERY_TASK_MODULES = ['deliverysite.tasks.tasks']
 CELERY_BEAT_SCHEDULE = {
     'black_friday': {
         'task': 'tasks.tasks.sale_november',
-        'schedule': 5
+        'schedule': crontab(hour=0, minute=0, day_of_month='11,12', month_of_year='11') 
+    },
+    'gratitude': {
+        'task': 'tasks.tasks.send_gratitude',
+        'schedule': crontab(hour=0, minute=0, day_of_month='28', month_of_year='12'),
+        'args': [
+            'customer@example.com',
+            'С Днем Рождения!',
+            'Спасибо, что являетесь нашим клиентом!'
+        ],
     },
 }
+
+CACHES = {
+         'default': {
+             'BACKEND': 'django_redis.cache.RedisCache',
+             'LOCATION': 'redis://redis:6379/0',  
+             'OPTIONS': {
+                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+             }
+         }
+     }
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
