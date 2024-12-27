@@ -1,19 +1,56 @@
 """
 Модуль представлений для приложения доставки еды.
 """
+import time
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.core.cache import cache
 import django_filters
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Count, Q
 from rest_framework import viewsets, serializers, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Count, Q
-# from django.shortcuts import render, get_object_or_404
 from .models import Product, Category, Profile
 from .models import Address, Order, OrderedItem
 from .serializers import ProductSerializer, CategorySerializer, ProfileSerializer
 from .serializers import AddressSerializer, OrderSerializer, OrderedItemSerializer
+
+def product_list(request):
+    products = Product.objects.all()
+    return render(request, 'deliveryfood/product_list.html', {'products': products})
+
+# def product_detail(request, product_id):
+#     product = get_object_or_404(Product, id=product_id)
+#     return render(request, 'deliveryfood/product_detail.html', {'product': product})
+
+def product_detail(request, id):
+    """
+    Отображает информацию о продукте.
+
+    Эта функция получает информацию о продукте по его id 
+    и отображает ее на странице product_detail.html.
+    """
+    start_time = time.time()
+    cache_key = f"product_{id}"
+    product = cache.get(cache_key)
+    
+    if product is None:
+        # Получаем продукт по id
+        product = get_object_or_404(Product, id=id)
+        cache.set(cache_key, product, timeout=60*15)  # Кэш на 15 минут
+    
+    end_time = time.time()
+    print(f"Время выполнения с кэшем: {end_time - start_time:.4f} секунд")
+    
+    return render(
+        request,
+        "deliveryfood/product_detail.html",  # Убедитесь, что путь к шаблону правильный
+        {
+            "product": product,
+        },
+    )
 
 class ProductFilter(django_filters.FilterSet):
     """
@@ -148,6 +185,8 @@ class ProductViewSet(viewsets.ModelViewSet):
         )
         serializer2 = ProductSerializer(selected_products, many=True)
         return Response ({"Выбранные товары" : serializer2.data,})
+
+
 
 class CategoryViewSet(viewsets.ModelViewSet):
     """

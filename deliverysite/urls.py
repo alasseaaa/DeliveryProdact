@@ -46,6 +46,8 @@ router.register("ordereditems", views.OrderedItemViewSet)
 
 urlpatterns = [
     path("deliveryfood/", include("deliveryfood.urls")),
+    path('products/<int:id>/', views.product_detail, name='product_detail'),
+    path('products/', views.product_list, name='product_list'),
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
     path('swagger/', SchemaView.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

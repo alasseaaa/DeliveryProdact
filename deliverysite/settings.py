@@ -162,7 +162,7 @@ CELERY_BEAT_SCHEDULE = {
     },
     'gratitude': {
         'task': 'tasks.tasks.send_gratitude',
-        'schedule': crontab(hour=0, minute=0, day_of_month='28', month_of_year='12'),
+        'schedule': 5,
         'args': [
             'customer@example.com',
             'С Днем Рождения!',
@@ -170,6 +170,22 @@ CELERY_BEAT_SCHEDULE = {
         ],
     },
 }
+
+LOGGING = {
+               'version': 1,
+               'disable_existing_loggers': False,
+               'handlers': {
+                   'console': {
+                       'class': 'logging.StreamHandler',
+                   },
+               },
+               'loggers': {
+                   'django.db.backends': {
+                       'handlers': ['console'],
+                       'level': 'DEBUG',
+                   },
+               },
+           }
 
 CACHES = {
          'default': {

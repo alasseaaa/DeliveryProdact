@@ -3,6 +3,7 @@ asgiref==3.8.1
 astroid==3.3.6
 async-timeout==5.0.1
 billiard==4.2.1
+cache==1.0.3
 celery==5.4.0
 certifi==2024.12.14
 charset-normalizer==3.4.1
