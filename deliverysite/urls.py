@@ -50,5 +50,6 @@ urlpatterns = [
     path('products/', views.product_list, name='product_list'),
     path("admin/", admin.site.urls),
     path("api/", include(router.urls)),
+    path('accounts/', include('allauth.urls')),
     path('swagger/', SchemaView.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 ]
