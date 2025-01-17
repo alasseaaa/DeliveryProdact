@@ -48,6 +48,8 @@ class ProductAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
         'category',
         "get_short_description",
         'price',
+        'file',
+        'url',
     ]
     # поиск
     search_fields = (
