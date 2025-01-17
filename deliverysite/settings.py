@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 
@@ -95,7 +95,7 @@ DATABASES = {
         'NAME': 'deliverydb',
         'USER': 'postgres',
         'PASSWORD': 'lovenow7',
-        'HOST': '172.19.144.1',
+        'HOST': 'db',
         'PORT': '5432',
     }
 }
@@ -153,12 +153,6 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
-# SPECTACULAR_SETTINGS = {
-#     'TITLE': 'Dynasty_8',
-#     'DESCRIPTION': 'Документация',
-#     'VERSION': '1.0.0',
-#     'SERVE_INCLUDE_SCHEMA': False,
-# }
 
 # Настройки для MailHog
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -168,29 +162,29 @@ EMAIL_USE_TLS = False
 EMAIL_USE_SSL = False
 DEFAULT_FROM_EMAIL = 'test@example.com'
 
-CELERY_BROKER_URL = 'redis://localhost:6380/0'
+# CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
 CELERY_RESULT_BACKEND = 'django-db'
 
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",  # Адрес Redis
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-        "KEY_PREFIX": "example"  # Префикс для ключей (опционально)
-    }
-}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://127.0.0.1:6379/1",  # Адрес Redis
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         },
+#         "KEY_PREFIX": "example"  # Префикс для ключей (опционально)
+#     }
+# }
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Стандартная аутентификация Django
     'allauth.account.auth_backends.AuthenticationBackend',  # Поддержка allauth
 ]
 
-SITE_ID = 3  # ID текущего сайта, используемого в Django Sites Framework
+SITE_ID = 4  # ID текущего сайта, используемого в Django Sites Framework
 
 # # Перенаправления после логина/логаута
 LOGIN_REDIRECT_URL = '/api/'  # Куда перенаправлять после успешного входа

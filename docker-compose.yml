@@ -1,5 +1,18 @@
 version: "3.10.6"
 services:
+  db:
+    image: postgres:16.4
+    platform: linux/amd64
+    volumes:
+      - ./postgres:/docker-entrypoint-initdb.d
+      - delivery-database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "lovenow7"
+      POSTGRES_DB: "deliverydb"
+    ports:
+      - "127.0.0.1:5432:5432"
+    command: -p "5432"
   web:
     build: .
     ports:
@@ -7,39 +20,42 @@ services:
     volumes:
       - ./:/app
     depends_on:
-      - celery
-      - redis
+      #- celery
+      #- redis
       - mailhog
     environment:
       - DJANGO_SETTINGS_MODULE=deliverysite.settings
-  celery:
-    build: .
-    command: celery -A deliverysite worker -l info
-    depends_on:
-      - redis
-    environment:
-      - DJANGO_SETTINGS_MODULE=deliverysite.settings
-  redis:
-    image: redis:alpine
-    hostname: redis
-    ports:
-      - "6379:6379"
+      - DATABASE_HOST=host.docker.internal
+  # celery:
+  #   build: .
+  #   command: celery -A deliverysite worker -l info
+  #   depends_on:
+  #     - redis
+  #   environment:
+  #     - DJANGO_SETTINGS_MODULE=deliverysite.settings
+  # redis:
+  #   image: redis:alpine
+  #   hostname: redis
+  #   ports:
+  #     - "6379:6379"
   mailhog:
     image: mailhog/mailhog:latest
     ports:
       - "1025:1025"  # SMTP port
       - "8025:8025"  # Web interface port
-  celerybeat:
-    build: .
-    command: celery -A deliverysite beat -l info
-    depends_on:
-      - redis
-      - web
-    environment:
-      - DJANGO_SETTINGS_MODULE=deliverysite.settings
+  # celerybeat:
+  #   build: .
+  #   command: celery -A deliverysite beat -l info
+  #   depends_on:
+  #     - redis
+  #     - web
+  #   environment:
+  #     - DJANGO_SETTINGS_MODULE=deliverysite.settings
 
 
-
+volumes:
+  delivery-database:
+     external: true
 
 
 

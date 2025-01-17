@@ -3,6 +3,7 @@
 """
 import time
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 from django.core.cache import cache
 # from django.db import connection
 from import_export.admin import ExportActionModelAdmin
@@ -37,7 +38,7 @@ class ProductAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
     list_display = [
         'name',
         'category',
-        'description',
+        "get_short_description",
         'price',
     ]
     # поиск
@@ -45,6 +46,7 @@ class ProductAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
         "name",
         "price",
         "description",
+        "image_visible",
     )
     # фильтрация
     list_filter = ["name"]
@@ -53,35 +55,47 @@ class ProductAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
     list_display_links = ["name"]
     resource_class = ProductResource
 
-    def get_queryset(self, request):
+
+    @admin.display(description='Краткое описание')  # Использование @admin.display
+    def get_short_description(self, obj):
         """
-        Переопределяем метод для получения QuerySet, добавляем кэширование.
+        Возвращает краткое описание объекта.
+        Описание объекта, сокращенное до первых пятидесяти символов.
         """
-        start_time = time.time()
-        cache_key = 'product_admin_queryset'  # уникальный ключ для кэша
-        cached_data = cache.get(cache_key)
+        return (
+            obj.description[:50] + "..."
+            if len(obj.description) > 50
+            else obj.description
+        )
+    # def get_queryset(self, request):
+    #     """
+    #     Переопределяем метод для получения QuerySet, добавляем кэширование.
+    #     """
+    #     start_time = time.time()
+    #     cache_key = 'product_admin_queryset'  # уникальный ключ для кэша
+    #     cached_data = cache.get(cache_key)
 
-        if cached_data is None:
-            print("Запрос к базе данных, т.к. кэша нет")
+    #     if cached_data is None:
+    #         print("Запрос к базе данных, т.к. кэша нет")
 
-            queryset = super().get_queryset(request)
+    #         queryset = super().get_queryset(request)
 
-            # Создаем копию queryset в виде списка, т.к. QuerySet нельзя закэшировать
-            cached_data = list(queryset)
+    #         # Создаем копию queryset в виде списка, т.к. QuerySet нельзя закэшировать
+    #         cached_data = list(queryset)
 
-            cache.set(cache_key, cached_data, timeout=CACHE_TIMEOUT)  # Кэш на 15 минут
-        else:
-            print("Данные получены из кэша")
+    #         cache.set(cache_key, cached_data, timeout=CACHE_TIMEOUT)  # Кэш на 15 минут
+    #     else:
+    #         print("Данные получены из кэша")
 
-        #  Возвращаем queryset из закэшированных данных
+    #     #  Возвращаем queryset из закэшированных данных
 
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Время выполнения запроса: {execution_time:.4f} секунд")
+    #     end_time = time.time()
+    #     execution_time = end_time - start_time
+    #     print(f"Время выполнения запроса: {execution_time:.4f} секунд")
 
 
-        # Создаем QuerySet из кэшированных данных
-        return Product.objects.filter(pk__in=[item.pk for item in cached_data])
+    #     # Создаем QuerySet из кэшированных данных
+    #     return Product.objects.filter(pk__in=[item.pk for item in cached_data])
 
 @admin.register(Profile)
 class ProfileAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
@@ -130,6 +144,7 @@ class OrderAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
     Админ-класс для управления заказами.
     """
     list_display = ['id', 'user', 'user_addresses', 'order_date',]
+    date_hierarchy = 'order_date'
     readonly_fields = ['order_date']
     raw_id_fields=['user', 'user_addresses']
     inlines = [OrderInline]
@@ -138,6 +153,7 @@ class OrderAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
         'user__full_name',
         'user__email'
     )
+    # filter_horizontal = ('product',)  
     resource_class = OrderResource
 
 @admin.register(OrderedItem)

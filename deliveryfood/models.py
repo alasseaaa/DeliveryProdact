@@ -27,6 +27,9 @@ class Product(models.Model):
     """
     name = models.CharField(max_length=64, verbose_name="Название")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name='Категория')
+    image = models.ImageField(
+        upload_to="products/%Y/%m/%d", blank=True, verbose_name="Изображение"
+    )
     description = models.CharField(max_length=512, verbose_name="Описание")
     price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name="Цена")
     history = HistoricalRecords()

@@ -1,18 +1,14 @@
-# Основа образа - Python 3.10.6
-FROM python:3.10.6
+FROM python:3.13
+ENV PYTHONUNBUFFERED 1
 
-RUN python -m pip install --upgrade pip
 WORKDIR /app
-# Установка необходимых пакетов
+
+RUN apt update -y && apt install -y postgresql-client
+
 COPY requirements.txt .
-RUN pip install -r requirements.txt
 
+RUN python -m pip install --upgrade pip && pip install -r requirements.txt;
 
-# Копирование файлов проекта в контейнер
 COPY . .
 
-# Установка зависимостей Django
-# RUN python manage.py migrate
-
-# Запуск Django сервера
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+CMD ["bash", "-c", "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"]
