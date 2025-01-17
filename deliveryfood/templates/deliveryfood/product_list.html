@@ -7,15 +7,17 @@
 </head>
 <body>
     <script src="//accounts.google.com/gsi/client" async></script>
-<div id="g_id_onload"
-     data-client_id="123-secret.apps.googleusercontent.com"
-     data-login_uri="{% url 'google_login_by_token' %}">
-</div>
+    <div id="g_id_onload"
+         data-client_id="123-secret.apps.googleusercontent.com"
+         data-login_uri="{% url 'google_login_by_token' %}">
+    </div>
     <h1>Все товары</h1>
     <ul>
         {% for product in products %}
             <li>
                 <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a> - {{ product.price }}₽
+                <br>
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100px; max-height: 100px;">
             </li>
         {% endfor %}
     </ul>

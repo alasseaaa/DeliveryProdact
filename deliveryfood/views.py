@@ -3,7 +3,7 @@
 """
 import time
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.core.cache import cache
 import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
@@ -11,6 +11,7 @@ from django.db.models import Count, Q
 from rest_framework import viewsets, serializers, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.contrib.auth import authenticate, login
 from rest_framework.filters import SearchFilter
 from .models import Product, Category, Profile
 from .models import Address, Order, OrderedItem
@@ -270,6 +271,23 @@ class OrderedItemViewSet(viewsets.ModelViewSet):
     serializer_class = OrderedItemSerializer
     filter_backends = [SearchFilter, DjangoFilterBackend]
     filterset_class = OrderedItemFilter
+
+def user_login(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                request.session.set_expiry(5)  # Устанавливаем срок действия сеанса в 600 секунд
+                return redirect('deliveryfood:product_list')
+            else:
+                return HttpResponse('Профиль не активен.')
+        else:
+            return HttpResponse('Неверные логин или пароль.')
+    else:
+        return render(request, 'admin/login.html')
 
 def index(request):
     """
