@@ -3,10 +3,18 @@
 """
 import time
 from django.contrib import admin
+from django.http import FileResponse
 from django.utils.safestring import mark_safe
+from import_export import resources
 from django.core.cache import cache
 # from django.db import connection
 from import_export.admin import ExportActionModelAdmin
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.units import inch
+from io import BytesIO
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 from simple_history.admin import SimpleHistoryAdmin
 from .models import Category, Product, Profile, Address, Order, OrderedItem
 from .export import AddressResource, CategoryResource
@@ -14,7 +22,7 @@ from .export import OrderResource, OrderedItemResource
 from .export import ProductResource, ProfileResource
 
 CACHE_TIMEOUT = 60 * 15  # 15 минут
-
+pdfmetrics.registerFont(TTFont('OpenSans', 'fonts/OpenSans-Regular.ttf'))
 
 @admin.register(Category)
 class CategoryAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
@@ -67,6 +75,44 @@ class ProductAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
             if len(obj.description) > 50
             else obj.description
         )
+    
+    def generate_pdf(self, request, queryset):
+        """
+        Действие для генерации PDF-документа с информацией о выбранных товарах.
+        """
+        buffer = BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        y_position = 10.5 * inch  # Начальная позиция по оси Y
+
+        # Устанавливаем шрифт для кириллицы
+        p.setFont("OpenSans", 12)
+
+        for product in queryset:
+            textobject = p.beginText()
+            textobject.setTextOrigin(inch, y_position)  # Устанавливаем позицию текста
+            
+            # Добавляем текст с использованием кириллицы
+            textobject.textLine(f"Name: {product.name}")
+            textobject.textLine(f"Price, RUB: {product.price}")
+            textobject.textLine(f"Category: {product.category}")
+            textobject.textLine("-" * 30)
+
+            p.drawText(textobject)
+            y_position -= 1.5 * inch  # Корректируем позицию для следующей записи
+            
+            if y_position <= inch:  # Проверяем не ушли ли мы вниз страницы
+                p.showPage()  # Начинаем новую страницу
+                y_position = 10.5 * inch  # Возвращаем позицию к началу новой страницы
+                p.setFont("OpenSans", 12)  # Устанавливаем шрифт снова на новой странице
+
+        p.save()
+
+        buffer.seek(0)
+        return FileResponse(buffer, as_attachment=True, filename='products.pdf')
+
+    generate_pdf.short_description = "Сгенерировать PDF"
+    actions = ['generate_pdf']
+
     # def get_queryset(self, request):
     #     """
     #     Переопределяем метод для получения QuerySet, добавляем кэширование.

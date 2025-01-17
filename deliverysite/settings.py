@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'wkhtmltopdf',
 ]
 
 MIDDLEWARE = [
@@ -193,3 +194,7 @@ LOGOUT_REDIRECT_URL = '/api/'  # Куда перенаправлять посл�
 # Отключение обязательного подтверждения email
 ACCOUNT_EMAIL_VERIFICATION = "none"
 ACCOUNT_EMAIL_REQUIRED = True
+
+WKHTMLTOPDF_CMD_OPTIONS = {
+    'quiet': True,
+}

@@ -32,6 +32,8 @@ class Product(models.Model):
     )
     description = models.CharField(max_length=512, verbose_name="Описание")
     price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name="Цена")
+    file = models.FileField(upload_to='product_files/', blank=True, null=True)
+    url = models.URLField(blank=True, null=True)
     history = HistoricalRecords()
 
     class Meta:
