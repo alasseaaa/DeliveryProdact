@@ -1,16 +1,31 @@
-{% extends "/deliveryfood.html" %}
+{% extends 'base.html' %}
 
-{% block title %}
-  Авторизация | Магазин доставки еды
-{% endblock %}
+{% block title %}Авторизация | Магазин доставки еды{% endblock %}
 
 {% block content %}
-  <p><a href="{% url 'deliveryfood:register' %}">Нет профиля? Зарегистрируйтесь!</a></p>
-  <h1>Авторизация</h1>
-   <p>Для входа введите логин и пароль</p>
-   <form method="post">
-    {{ form.as_p }}
-    {% csrf_token %}
-     <p><input type="submit" value="Войти"></p>
-   </form>
+<div class="container">
+    <h1 class="mb-4">Авторизация</h1>
+    <p class="mb-4">Для входа введите логин и пароль:</p>
+
+    <form method="post">
+      {% csrf_token %}
+      
+      <div class="mb-3">
+          <label for="{{ form.username.id_for_label }}" class="form-label">Логин</label>
+          <input type="text" name="{{ form.username.name }}" id="{{ form.username.id_for_label }}" class="form-control" value="{{ form.username.value|default:'' }}">
+      </div>
+  
+      <div class="mb-3">
+          <label for="{{ form.password.id_for_label }}" class="form-label">Пароль</label>
+          <input type="password" name="{{ form.password.name }}" id="{{ form.password.id_for_label }}" class="form-control" value="{{ form.password.value|default:'' }}">
+      </div>
+  
+      <div class="mb-3 form-check">
+          <input type="checkbox" class="form-check-input" id="rememberMe">
+          <label class="form-check-label" for="rememberMe">Запомнить меня</label>
+      </div>
+  
+      <button type="submit" class="btn btn-primary w-100">Войти</button>
+  </form>  
+</div>
 {% endblock %}

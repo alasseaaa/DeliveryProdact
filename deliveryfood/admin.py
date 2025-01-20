@@ -16,7 +16,7 @@ from io import BytesIO
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from simple_history.admin import SimpleHistoryAdmin
-from .models import Category, Product, Profile, Address, Order, OrderedItem
+from .models import BestSeller, Category, Product, ProductReview, Profile, Address, Order, OrderedItem, StoreFact, StoreReview
 from .export import AddressResource, CategoryResource
 from .export import OrderResource, OrderedItemResource
 from .export import ProductResource, ProfileResource
@@ -224,3 +224,35 @@ class OrderedItemAdmin(SimpleHistoryAdmin, ExportActionModelAdmin):
         return obj.product.price * obj.product_quantity
 
     get_total_item_price.short_description = 'Итоговая цена'
+
+
+@admin.register(BestSeller)
+class BestSellerAdmin(admin.ModelAdmin):
+    """
+    Админ-класс для управления хитами продаж.
+    """
+    list_display = ('product', 'sales_count')
+    search_fields = ('product__name',)
+
+
+@admin.register(StoreReview)
+class StoreReviewAdmin(admin.ModelAdmin):
+    """
+    Админ-класс для управления отзывами о магазине.
+    """
+    list_display = ('profile', 'rating', 'created_at')
+    search_fields = ('profile__full_name', 'review_text')
+    list_filter = ('rating', 'created_at')
+
+
+@admin.register(ProductReview)
+class ProductReviewAdmin(admin.ModelAdmin):
+    list_display = ['product', 'profile', 'rating', 'created_at']
+    search_fields = ['product__name', 'profile__full_name', 'review_text']
+    list_filter = ['rating', 'created_at']
+
+@admin.register(StoreFact)
+class StoreFactAdmin(admin.ModelAdmin):
+    list_display = ['title', 'created_at']
+    search_fields = ['title', 'description']
+    list_filter = ['created_at']

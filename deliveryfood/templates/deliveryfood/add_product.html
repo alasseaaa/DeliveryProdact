@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Добавить товар | Магазин доставки еды{% endblock %}
+
+{% block content %}
+  <h1 class="mb-4">Добавить товар</h1>
+
+  {% if form.errors %}
+    <div class="alert alert-danger">
+      <ul>
+        {% for field in form %}
+          {% for error in field.errors %}
+            <li>{{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+  
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="id_name" class="form-label">Название товара</label>
+      <input type="text" name="name" class="form-control" id="id_name" value="{{ form.name.value|default:'' }}">
+    </div>
+    <div class="mb-3">
+      <label for="id_description" class="form-label">Описание</label>
+      <textarea name="description" class="form-control" id="id_description">{{ form.description.value|default:'' }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label for="id_price" class="form-label">Цена</label>
+      <input type="number" name="price" class="form-control" id="id_price" value="{{ form.price.value|default:'' }}">
+    </div>
+    <div class="mb-3">
+      <label for="id_category" class="form-label">Категория</label>
+      <select name="category" class="form-control" id="id_category">
+        {% for choice in form.category.field.choices %}
+          <option value="{{ choice.0 }}" {% if choice.0 == form.category.value %}selected{% endif %}>{{ choice.1 }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="id_availability">Доступность</label>
+      <select class="form-control" id="id_availability" name="availability">
+        {% for choice in form.availability.field.choices %}
+          <option value="{{ choice.0 }}" {% if choice.0 == form.availability.value %}selected{% endif %}>{{ choice.1 }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="id_image" class="form-label">Изображение</label>
+      <input type="file" name="image" class="form-control" id="id_image">
+    </div>
+    <button type="submit" class="btn btn-primary">Добавить</button>
+  </form>
+{% endblock %}

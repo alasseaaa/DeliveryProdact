@@ -1,15 +1,41 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ product.name }}</title>
-</head>
-<body>
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} | Магазин доставки еды{% endblock %}
+
+{% block content %}
     <h1>{{ product.name }}</h1>
-    <img src="{{ product.image.url }}">
-    <p>Описание: {{ product.description }}</p>
-    <p>Цена: {{ product.price }}₽</p>
-    <a href="{% url 'product_list' %}">Назад к списку товаров</a>
-</body>
-</html>
+    <div class="row">
+        <div class="col-md-4">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid">
+        </div>
+        <div class="col-md-8">
+            <p><strong>Описание:</strong> {{ product.description }}</p>
+            <p><strong>Цена:</strong> {{ product.price }}₽</p>
+            <p><strong>Категория:</strong> {{ product.category }}</p>
+            <p><strong>Доступность:</strong>
+                {% if product.availability == 'available' %}
+                    Доступно
+                {% else %}
+                    Недоступно
+                {% endif %}
+            </p>
+            <a href="{% url 'product_list' %}" class="btn btn-secondary">Назад к списку товаров</a>
+        </div>
+    </div>
+
+    <h2 class="mt-5">Отзывы о товаре</h2>
+    <div class="row">
+        {% for review in reviews %}
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Отзыв от {{ review.profile.full_name }}</h5>
+                    <p class="card-text">{{ review.review_text }}</p>
+                    <p><strong>Рейтинг:</strong> {{ review.rating }} звезд</p>
+                    <p><strong>Дата:</strong> {{ review.created_at }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

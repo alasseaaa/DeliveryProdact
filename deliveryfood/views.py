@@ -1,6 +1,7 @@
 """
 Модуль представлений для приложения доставки еды.
 """
+from django import template
 import time
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -13,10 +14,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.contrib.auth import authenticate, login
 from rest_framework.filters import SearchFilter
-from .models import Product, Category, Profile
+from .models import BestSeller, Product, Category, ProductForm, ProductReview, Profile, StoreFact, StoreReview, UserRegistrationForm
 from .models import Address, Order, OrderedItem
 from .serializers import ProductSerializer, CategorySerializer, ProfileSerializer
 from .serializers import AddressSerializer, OrderSerializer, OrderedItemSerializer
+from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 
 def product_list(request):
     products = Product.objects.all()
@@ -34,18 +37,20 @@ def product_detail(request, id):
     product = cache.get(cache_key)
     
     if product is None:
-        # Получаем продукт по id
         product = get_object_or_404(Product, id=id)
-        cache.set(cache_key, product, timeout=60*15)  # Кэш на 15 минут
+        cache.set(cache_key, product, timeout=60*15)
     
+    reviews = ProductReview.objects.filter(product=product)
+
     end_time = time.time()
     print(f"Время выполнения с кэшем: {end_time - start_time:.4f} секунд")
     
     return render(
         request,
-        "deliveryfood/product_detail.html",  # Убедитесь, что путь к шаблону правильный
+        "deliveryfood/product_detail.html",
         {
             "product": product,
+            'reviews': reviews
         },
     )
 
@@ -124,6 +129,14 @@ class ProductViewSet(viewsets.ModelViewSet):
                 "Статистика по категориям": category_count,
             }
         )
+
+    def exclude_expensive(self, request):
+        """
+        Исключает товары с ценой больше 100.
+        """
+        products = Product.objects.exclude(price__gt=100)
+        serializer = ProductSerializer(products, many=True)
+        return Response({"products_excluded_expensive": serializer.data})
 
     @action(methods=['POST', 'GET'], detail=True)
     def change_price(self, request, pk=None):
@@ -281,16 +294,132 @@ def user_login(request):
             if user.is_active:
                 login(request, user)
                 request.session.set_expiry(5)  # Устанавливаем срок действия сеанса в 600 секунд
-                return redirect('deliveryfood:product_list')
+                return redirect('product_list')
             else:
                 return HttpResponse('Профиль не активен.')
         else:
             return HttpResponse('Неверные логин или пароль.')
     else:
-        return render(request, 'admin/login.html')
+        return render(request, 'deliveryfood/login.html')
 
 def index(request):
     """
-    index
+    Главная страница, отображающая список продуктов.
     """
-    return HttpResponse("Hello, world. You're at the index.")
+    products = Product.objects.all()
+    return render(request, 'deliveryfood/base.html', {'products': products})
+
+@login_required
+def add_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('product_list')
+        else:
+            print(form.errors)
+    else:
+        form = ProductForm()
+
+    return render(request, 'deliveryfood/add_product.html', {'form': form})
+
+
+@login_required
+def delete_product(request, id):
+    product = get_object_or_404(Product, id=id)
+    product.delete()
+    return redirect('product_list')
+
+@login_required
+def edit_product(request, id):
+    product = get_object_or_404(Product, id=id)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save(commit=True)
+            return redirect('product_list')
+    else:
+        form = ProductForm(instance=product)
+    return render(request, 'deliveryfood/edit_product.html', {'form': form, 'product': product})
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.set_password(form.cleaned_data['password'])
+            user.save()
+
+            return redirect('login')
+    else:
+        form = UserRegistrationForm()
+
+    return render(request, 'deliveryfood/register.html', {'form': form})
+
+def product_list(request):
+    search_query = request.GET.get('search', '')
+    min_price = request.GET.get('min_price')
+    max_price = request.GET.get('max_price')
+    category = request.GET.get('category')
+    ordering = request.GET.get('ordering', 'price')
+    exclude_expensive = request.GET.get('exclude_expensive')
+
+    products = Product.objects.all()
+
+    if exclude_expensive:
+        products = Product.objects.exclude_expensive() 
+
+    if search_query:
+        products = products.filter(name__icontains=search_query)
+    
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+        
+    if category:
+        products = products.filter(category__id=category)
+
+    products = products.order_by(ordering)
+    paginator = Paginator(products, 4)
+    page_number = request.GET.get('page')
+    try:
+        page_obj = paginator.get_page(page_number)
+    except Exception as e:
+        page_obj = paginator.get_page(1)
+        print(f"Pagination error: {e}")
+    
+    categories = Category.objects.all()
+    
+    filtered_product_count = products.count()
+    
+    store_facts = StoreFact.objects.all()
+    
+    best_sellers = BestSeller.objects.all().order_by('-sales_count')
+    store_reviews = StoreReview.objects.all().order_by('-created_at')
+
+    return render(
+        request, 
+        'deliveryfood/product_list.html', 
+        {
+            'page_obj': page_obj,
+            'search': search_query,
+            'min_price': min_price,
+            'max_price': max_price,
+            'categories': categories,
+            'selected_category': category,
+            'exclude_expensive': exclude_expensive,
+            'filtered_product_count': filtered_product_count,
+            'best_sellers': best_sellers,
+            'store_reviews': store_reviews,
+            'store_facts': store_facts
+        }
+    )
+
+
+@login_required
+def orders_view(request):
+    """
+    Страница с заказами и пользователями.
+    """
+    return render(request, 'deliveryfood/orders.html')

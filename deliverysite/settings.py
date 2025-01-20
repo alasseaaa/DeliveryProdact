@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
     'wkhtmltopdf',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -63,7 +64,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
+
+INTERNAL_IPS = ['127.0.0.1', 'host.docker.internal', 'localhost', '0.0.0.0']
 
 ROOT_URLCONF = 'deliverysite.urls'
 
@@ -137,7 +141,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -145,7 +149,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
@@ -188,8 +192,11 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 4  # ID текущего сайта, используемого в Django Sites Framework
 
 # # Перенаправления после логина/логаута
-LOGIN_REDIRECT_URL = '/api/'  # Куда перенаправлять после успешного входа
-LOGOUT_REDIRECT_URL = '/api/'  # Куда перенаправлять после выхода
+LOGIN_REDIRECT_URL = '/'  # Куда перенаправлять после успешного входа
+LOGOUT_REDIRECT_URL = '/'  # Куда перенаправлять после выхода
+LOGIN_URL = 'login'
+
+CSRF_COOKIE_SECURE = False
 
 # Отключение обязательного подтверждения email
 ACCOUNT_EMAIL_VERIFICATION = "none"

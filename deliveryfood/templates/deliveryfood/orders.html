@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% load custom_tags %}
+
+{% block title %}Список заказов и пользователей{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="text-center">Список заказов и пользователей</h1>
+  
+  <div class="row mt-4">
+    <div class="col-md-6">
+      <h2>Заказы</h2>
+      <ul class="list-group">
+        {% get_orders as orders %}
+        {% for order in orders %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>Заказ №{{ order.id }}</span>
+            <small>
+              <strong>Пользователь:</strong> {{ customer.full_name }}<br>
+              <strong>Адрес:</strong> {{ order.user_addresses.address }}
+            </small>
+          </li>
+        {% empty %}
+          <li class="list-group-item">Нет заказов.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <div class="col-md-6">
+      <h2>Пользователи</h2>
+      <ul class="list-group">
+        {% get_customers as customers %}
+        {% for customer in customers %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>Пользователь: {{ customer.full_name }}</span>
+            <small>
+              Сделано заказов: {{ customer.order_set.count }}
+            </small>
+          </li>
+        {% empty %}
+          <li class="list-group-item">Нет пользователей.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

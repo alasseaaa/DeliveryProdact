@@ -1,0 +1,21 @@
+{% extends "base.html" %} {% block title %}Главная | Магазин доставки еды{%
+  endblock %} {% block content %}
+  <h1>Наши продукты</h1>
+  <ul>
+    {% for product in products %}
+    <li>
+      <a href="{% url 'product_detail' product.id %}">{{ product.name }}</a> - {{
+      product.price }}₽
+      <br />
+      <img
+        src="{{ product.image.url }}"
+        alt="{{ product.name }}"
+        style="max-width: 100px; max-height: 100px"
+      />
+    </li>
+    {% empty %}
+    <li>Нет доступных продуктов.</li>
+    {% endfor %}
+  </ul>
+  {% endblock %}
+  
