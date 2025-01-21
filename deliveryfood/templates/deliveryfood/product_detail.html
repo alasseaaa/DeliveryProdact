@@ -32,7 +32,7 @@
                     <h5 class="card-title">Отзыв от {{ review.profile.full_name }}</h5>
                     <p class="card-text">{{ review.review_text }}</p>
                     <p><strong>Рейтинг:</strong> {{ review.rating }} звезд</p>
-                    <p><strong>Дата:</strong> {{ review.created_at }}</p>
+                    <p><strong>Дата:</strong> {{ review.created_at|date:"d F Y, H:i"  }}</p>
                 </div>
             </div>
         </div>

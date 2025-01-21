@@ -157,11 +157,14 @@ class OrderedItem(models.Model):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ['name', 'category', 'image', 'description', 'price', 'file', 'url', 'availability']
+        fields = ['name', 'category', 'description', 'price', 'availability', 'image']
         widgets = {
-            'description': forms.Textarea(attrs={'cols': 80, 'rows': 5}),
-            'price': forms.NumberInput(attrs={'min': 0}),
-            'availability': forms.Select(choices=Product.AVAILABILITY_CHOICES),
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'min': 0}),
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'availability': forms.Select(attrs={'class': 'form-control'}),
+            'image': forms.FileInput(attrs={'class': 'form-control'}),
         }
 
     def clean_price(self):

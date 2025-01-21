@@ -32,3 +32,38 @@ def get_customers():
     Возвращает всех пользователей с их заказами.
     """
     return Profile.objects.prefetch_related('order_set').all()
+
+@register.inclusion_tag('product_list.html')
+def show_products(category=None, min_price=None, max_price=None):
+    """
+    Возвращает список товаров с учетом фильтров.
+    """
+    products = Product.objects.all()
+    if category:
+        products = products.filter(category=category)
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+    return {'products': products}
+
+@register.simple_tag
+def get_filtered_products(category=None, min_price=None, max_price=None):
+    """
+    Возвращает отфильтрованный набор товаров.
+    """
+    products = Product.objects.all()
+    if category:
+        products = products.filter(category=category)
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+    return products
+
+@register.simple_tag
+def count_products_in_category(category):
+    """
+    Возвращает количество товаров в заданной категории.
+    """
+    return Product.objects.filter(category=category).count()

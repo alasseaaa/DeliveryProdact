@@ -20,6 +20,7 @@ from .models import BestSeller, Category, Product, ProductReview, Profile, Addre
 from .export import AddressResource, CategoryResource
 from .export import OrderResource, OrderedItemResource
 from .export import ProductResource, ProfileResource
+from django.contrib.sessions.models import Session
 
 CACHE_TIMEOUT = 60 * 15  # 15 минут
 pdfmetrics.registerFont(TTFont('OpenSans', 'fonts/OpenSans-Regular.ttf'))
@@ -256,3 +257,9 @@ class StoreFactAdmin(admin.ModelAdmin):
     list_display = ['title', 'created_at']
     search_fields = ['title', 'description']
     list_filter = ['created_at']
+
+@admin.register(Session)
+class SessionAdmin(admin.ModelAdmin):
+    list_display = ['session_key', 'expire_date']
+    search_fields = ['session_key', 'session_data']
+    readonly_fields = ['session_data']

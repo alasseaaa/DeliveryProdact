@@ -20,6 +20,7 @@ from .serializers import ProductSerializer, CategorySerializer, ProfileSerialize
 from .serializers import AddressSerializer, OrderSerializer, OrderedItemSerializer
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Sum
 
 def product_list(request):
     products = Product.objects.all()
@@ -315,13 +316,30 @@ def add_product(request):
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+            # Сохраняем успешное сообщение в сессии
+            request.session['success_message'] = 'Продукт добавлен успешно!'
             return redirect('product_list')
         else:
-            print(form.errors)
+            # Сохраняем данные формы в сессии
+            request.session['form_data'] = request.POST
+            request.session['form_errors'] = form.errors
+            return redirect('add_product')
     else:
-        form = ProductForm()
+        # Восстанавливаем данные формы из сессии, если они есть
+        form_data = request.session.get('form_data', None)
+        form_errors = request.session.get('form_errors', None)
+        if form_data:
+            form = ProductForm(form_data)
+        else:
+            form = ProductForm()
+        # Очищаем данные сессии после использования
+        request.session['form_data'] = None
+        request.session['form_errors'] = None
 
-    return render(request, 'deliveryfood/add_product.html', {'form': form})
+        # Получаем успешное сообщение из сессии и очищаем его
+        success_message = request.session.pop('success_message', None)
+
+    return render(request, 'deliveryfood/add_product.html', {'form': form, 'form_errors': form_errors, 'success_message': success_message})
 
 
 @login_required
@@ -330,17 +348,39 @@ def delete_product(request, id):
     product.delete()
     return redirect('product_list')
 
+
 @login_required
-def edit_product(request, id):
-    product = get_object_or_404(Product, id=id)
+def edit_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
-            form.save(commit=True)
+            form.save()
+            # Сохраняем успешное сообщение в сессии
+            request.session['success_message'] = 'Продукт обновлен успешно!'
             return redirect('product_list')
+        else:
+            # Сохраняем данные формы в сессии
+            request.session['form_data'] = request.POST
+            request.session['form_errors'] = form.errors
+            return redirect('edit_product', pk=pk)
     else:
-        form = ProductForm(instance=product)
-    return render(request, 'deliveryfood/edit_product.html', {'form': form, 'product': product})
+        # Восстанавливаем данные формы из сессии, если они есть
+        form_data = request.session.get('form_data', None)
+        form_errors = request.session.get('form_errors', None)
+        if form_data:
+            form = ProductForm(form_data, instance=product)
+        else:
+            form = ProductForm(instance=product)
+        # Очищаем данные сессии после использования
+        request.session['form_data'] = None
+        request.session['form_errors'] = None
+
+        # Получаем успешное сообщение из сессии и очищаем его
+        success_message = request.session.pop('success_message', None)
+
+    return render(request, 'deliveryfood/edit_product.html', {'form': form, 'form_errors': form_errors, 'success_message': success_message})
+
 
 def register(request):
     if request.method == 'POST':
@@ -397,6 +437,11 @@ def product_list(request):
     
     best_sellers = BestSeller.objects.all().order_by('-sales_count')
     store_reviews = StoreReview.objects.all().order_by('-created_at')
+    
+    total_product_price = products.aggregate(total_price=Sum('price'))['total_price']
+    
+    products_data = products.values('id', 'name', 'price', 'category__category_name')
+    product_prices = products.values_list('price', flat=True)
 
     return render(
         request, 
@@ -412,7 +457,10 @@ def product_list(request):
             'filtered_product_count': filtered_product_count,
             'best_sellers': best_sellers,
             'store_reviews': store_reviews,
-            'store_facts': store_facts
+            'store_facts': store_facts,
+            'total_product_price': total_product_price,
+            'products_data': products_data,
+            'product_prices': product_prices
         }
     )
 
@@ -422,4 +470,10 @@ def orders_view(request):
     """
     Страница с заказами и пользователями.
     """
-    return render(request, 'deliveryfood/orders.html')
+    orders = Order.objects.all()
+    customer_names = Profile.objects.values_list('full_name', flat=True)
+
+    return render(request, 'deliveryfood/orders.html', {
+        'orders': orders,
+        'customer_names': customer_names
+    })
